@@ -30,7 +30,7 @@ app.post('/ingest/:instanceId', (req, res) => {
     const logLine = req.body.log_line;
     
     if (!activeInstances[instanceId]) {
-        return res.status(404).json({ error: "Invalid or expired instance ID" });
+        activeInstances[instanceId] = [];
     }
 
     activeInstances[instanceId].push(logLine);
