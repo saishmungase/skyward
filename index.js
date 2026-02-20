@@ -19,6 +19,12 @@ app.get('/generate-url', (req, res) => {
     });
 });
 
+app.get("/logs", (req, res) => {
+    res.json({
+        activeInstances
+    })
+})
+
 app.post('/ingest/:instanceId', (req, res) => {
     const { instanceId } = req.params;
     const logLine = req.body.log_line;
