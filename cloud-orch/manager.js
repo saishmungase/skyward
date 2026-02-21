@@ -6,6 +6,7 @@ import Groq from "groq-sdk";
 import 'dotenv/config';
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const server = http.createServer(app);
