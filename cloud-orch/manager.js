@@ -274,6 +274,15 @@ app.get("/status/:instanceId", (req, res) => {
   res.json({ instanceId, status: "good", totalLogs: activeInstances[instanceId].logs.length, agentOnline });
 });
 
+app.post("/clear-logs/:instanceId", (req, res) => {
+  const { instanceId } = req.params;
+  if (activeInstances[instanceId]) {
+    activeInstances[instanceId].logs = [];
+    broadcastToBrowsers(instanceId, { type: "logs_cleared", message: "All logs cleared" });
+  }
+  res.json({ message: "Logs cleared successfully", instanceId });
+});
+
 app.post("/auth/login", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: "Email and password required" });
@@ -389,3 +398,10 @@ server.listen(PORT, () => {
   console.log(`✅ Server    → http://localhost:${PORT}`);
   console.log(`✅ WebSocket → ws://localhost:${PORT}`);
 });
+
+
+/*
+
+pm2 logs dummy-api --raw 2>&1 | LOGPULSE_ID="e5252711-09c4-4e57-973f-b8f0d3a4f454" node logpulse-agent.js
+
+*/

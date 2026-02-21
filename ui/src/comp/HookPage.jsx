@@ -603,7 +603,7 @@ curl -X POST "${webhookUrl}" \\
           if (e.cleaned?.anomaly) s.anomaly++;
         });
         setStats(s);
-        const prio = valid.filter(e => ["ERROR","WARN"].includes((e.cleaned?.level||"").toUpperCase()));
+        const prio = valid.filter(e => (e.cleaned?.level||"").toUpperCase() === "ERROR");
         if (prio.length) setPriorities(prio);
         if (data.autoFix) setAutoFix(data.autoFix);
         if (data.agentOnline !== undefined) setAgentOnline(data.agentOnline);
@@ -620,7 +620,7 @@ curl -X POST "${webhookUrl}" \\
           warn:  prev.warn  + (lvl === "WARN"  ? 1 : 0),
           anomaly: prev.anomaly + (entry.cleaned?.anomaly ? 1 : 0),
         }));
-        if (lvl === "ERROR" || lvl === "WARN") {
+        if (lvl === "ERROR") {
           setPriorities(prev => prev.find(p => p.id === entry.id) ? prev : [entry, ...prev]);
         }
       }
@@ -629,10 +629,15 @@ curl -X POST "${webhookUrl}" \\
         const enriched = data.entry;
         setLogs(prev => prev.map(l => l.id === enriched.id ? enriched : l));
         logsRef.current = logsRef.current.map(l => l.id === enriched.id ? enriched : l);
-        setPriorities(prev => {
-          const exists = prev.find(p => p.id === enriched.id);
-          return exists ? prev.map(p => p.id === enriched.id ? enriched : p) : [enriched, ...prev];
-        });
+        const lvl = (enriched.cleaned?.level || "").toUpperCase();
+        if (lvl === "ERROR") {
+          setPriorities(prev => {
+            const exists = prev.find(p => p.id === enriched.id);
+            return exists ? prev.map(p => p.id === enriched.id ? enriched : p) : [enriched, ...prev];
+          });
+        } else {
+          setPriorities(prev => prev.filter(p => p.id !== enriched.id));
+        }
       }
 
       if (data.type === "autofix_triggered") {
@@ -770,8 +775,24 @@ curl -X POST "${webhookUrl}" \\
             {/* Priority Alerts */}
             {visiblePriorities.length > 0 && (
               <div>
-                <div style={{ fontSize: 11, color: "#ff4545", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: 1, marginBottom: 10, textTransform: "uppercase" }}>
-                  ⚠ Priority Alerts ({visiblePriorities.length})
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, color: "#ff4545", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+                    ⚠ Priority Alerts ({visiblePriorities.length})
+                  </div>
+                  <button
+                    onClick={async () => { 
+                      try {
+                        await fetch(`${SERVER}/clear-logs/${instance?.instanceId}`, { method: "POST" });
+                      } catch { showToastRef.current("Failed to clear logs on backend", "error"); }
+                      setLogs([]); 
+                      logsRef.current = []; 
+                      setPriorities([]);
+                      setStats({ total: 0, error: 0, warn: 0, anomaly: 0 }); 
+                      showToastRef.current("Logs cleared from dashboard and backend");
+                    }}
+                    style={{ background: "none", border: "1px solid #1e2d3d", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: "#3a5068", cursor: "pointer", transition: "all 0.2s" }}
+                    title="Clear all logs and priorities"
+                  >Clear</button>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {visiblePriorities.map(alert => (
@@ -850,7 +871,16 @@ curl -X POST "${webhookUrl}" \\
                     <button key={f} className={`filter-btn ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>{f}</button>
                   ))}
                   <button
-                    onClick={() => { setLogs([]); logsRef.current = []; setStats({ total: 0, error: 0, warn: 0, anomaly: 0 }); }}
+                    onClick={async () => { 
+                      try {
+                        await fetch(`${SERVER}/clear-logs/${instance?.instanceId}`, { method: "POST" });
+                      } catch { showToastRef.current("Failed to clear logs on backend", "error"); }
+                      setLogs([]); 
+                      logsRef.current = []; 
+                      setPriorities([]);
+                      setStats({ total: 0, error: 0, warn: 0, anomaly: 0 }); 
+                      showToastRef.current("Logs cleared from dashboard and backend");
+                    }}
                     style={{ marginLeft: "auto", background: "none", border: "1px solid #1e2d3d", borderRadius: 6, padding: "4px 12px", fontSize: 11, color: "#3a5068", cursor: "pointer" }}
                   >Clear</button>
                 </div>
