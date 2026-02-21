@@ -4,6 +4,7 @@ import { WebSocketServer } from "ws";
 import { randomUUID } from "crypto";
 import Groq from "groq-sdk";
 import 'dotenv/config';
+import cors from 'cors'; 
 
 const app = express();
 app.use(cors());
