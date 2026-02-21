@@ -6,6 +6,7 @@ import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import "dotenv/config";
 import cors from "cors";
+import sendReport from "./mail";
 
 const app = express();
 app.use(cors());
@@ -30,6 +31,18 @@ function getOrCreateInstance(instanceId) {
     };
   }
   return activeInstances[instanceId];
+}
+
+async function shareMail(email, content){
+    try {
+    const prompt = `You are an expert summarizer, Your task is to summarize this error message into 5-6 lines of summary of what happened with instance we need this to show the user the error happend in the system. Here is the infromation you have to summarize:- ${content}`;
+    const result = await geminiModel.generateContent(prompt);
+    const summary = result.response.text();
+    await sendReport(email, summary);
+  } catch (err) {
+    console.error(`[GEMINI ERROR] ${err.message}`);
+    return null;
+  }
 }
 
 function broadcastToBrowsers(instanceId, payload) {
@@ -146,6 +159,11 @@ async function processLog(instanceId, rawLog, entryId, timestamp) {
         fixHistory[instanceId].push(fixRecord);
 
         broadcastToBrowsers(instanceId, { type: "autofix_triggered", instanceId, fix: fixRecord });
+        
+        const alertEmail = process.env.EMAIL_CLI; 
+        const incidentContext = `Error: ${entry.raw}\n\nFix You can Apply: ${suggestion}`;
+
+        await shareMail(alertEmail, incidentContext);
 
         if (!agentReachable) {
           console.warn(`[AutoFix] Agent offline for instance ${instanceId}`);
@@ -403,5 +421,19 @@ server.listen(PORT, () => {
 /*
 
 pm2 logs dummy-api --raw 2>&1 | LOGPULSE_ID="e5252711-09c4-4e57-973f-b8f0d3a4f454" node logpulse-agent.js
+
+
+continuous run:- 
+cat << 'EOF' > start-agent.sh
+#!/bin/bash
+# This pipes the PM2 logs directly into your Node.js agent
+pm2 logs dummy-api --raw 2>&1 | LOGPULSE_ID="e5252711-09c4-4e57-973f-b8f0d3a4f454" node /home/ubuntu/logpulse-demo/logpulse-agent.js
+EOF
+
+chmod +x start-agent.sh
+
+pm2 start start-agent.sh --name "mission-control-agent"
+
+close pm2 stop mission-control-agent
 
 */
