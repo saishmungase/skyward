@@ -177,9 +177,16 @@ function AutoFixPanel({ instanceId, autoFix, agentOnline, fixHistory, onSave, on
     setDirty(false);
   }, [autoFix.enabled, autoFix.command]);
 
-  const handleToggle = () => {
-    setEnabled(e => !e);
-    setDirty(true);
+  const handleToggle = async () => {
+    const newState = !enabled;
+    setEnabled(newState);
+    setSaving(true);
+    try { 
+      await onSave(newState, command); 
+      setDirty(false); 
+    } finally { 
+      setSaving(false); 
+    }
   };
 
   const handleSave = async () => {
@@ -219,13 +226,14 @@ function AutoFixPanel({ instanceId, autoFix, agentOnline, fixHistory, onSave, on
 
           {/* Toggle switch */}
           <div
-            onClick={handleToggle}
+            onClick={() => !saving && handleToggle()}
             style={{
-              width: 48, height: 26, borderRadius: 13, cursor: "pointer", flexShrink: 0,
+              width: 48, height: 26, borderRadius: 13, cursor: saving ? "not-allowed" : "pointer", flexShrink: 0,
               background: enabled ? "linear-gradient(135deg, #00f5a0, #00c8d4)" : "rgba(255,255,255,0.08)",
               border: `1px solid ${enabled ? "transparent" : "#1e2d3d"}`,
               position: "relative", transition: "all 0.3s",
               boxShadow: enabled ? "0 0 16px rgba(0,245,160,0.3)" : "none",
+              opacity: saving ? 0.6 : 1,
             }}
           >
             <div style={{
