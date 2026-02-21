@@ -613,7 +613,13 @@ curl -X POST "${webhookUrl}" \\
       if (data.type === "new_log" && data.entry?.cleaned) {
         const entry = data.entry;
         const lvl = (entry.cleaned?.level || "").toUpperCase();
-        setLogs(prev => { const u = [...prev, entry]; logsRef.current = u; return u; });
+        setLogs(prev => { 
+          // Deduplicate by ID before adding
+          if (prev.find(l => l.id === entry.id)) return prev;
+          const u = [...prev, entry]; 
+          logsRef.current = u; 
+          return u; 
+        });
         setStats(prev => ({
           total: prev.total + 1,
           error: prev.error + (lvl === "ERROR" ? 1 : 0),
