@@ -25,3 +25,7 @@ dist-ssr
 
 
 /cloud-orch/.env
+
+/skyward.pem
+
+/test
