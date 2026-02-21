@@ -6,7 +6,7 @@ import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import "dotenv/config";
 import cors from "cors";
-import sendReport from "./mail";
+import sendReport from "./mail.js";
 
 const app = express();
 app.use(cors());
