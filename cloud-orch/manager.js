@@ -34,13 +34,20 @@ function getOrCreateInstance(instanceId) {
 }
 
 async function shareMail(email, content){
-    try {
+  if (!email) {
+    console.warn("[MAIL] No email address provided (EMAIL_CLI not set)");
+    return null;
+  }
+  try {
+    console.log(`[MAIL] Generating summary for ${email}...`);
     const prompt = `You are an expert summarizer, Your task is to summarize this error message into 5-6 lines of summary of what happened with instance we need this to show the user the error happend in the system. Here is the infromation you have to summarize:- ${content}`;
     const result = await geminiModel.generateContent(prompt);
     const summary = result.response.text();
+    console.log(`[MAIL] Sending email to ${email}...`);
     await sendReport(email, summary);
+    console.log(`[MAIL] Email sent successfully to ${email}`);
   } catch (err) {
-    console.error(`[GEMINI ERROR] ${err.message}`);
+    console.error(`[MAIL ERROR] Failed to send email to ${email}: ${err.message}`);
     return null;
   }
 }
@@ -163,7 +170,11 @@ async function processLog(instanceId, rawLog, entryId, timestamp) {
         const alertEmail = process.env.EMAIL_CLI; 
         const incidentContext = `Error: ${entry.raw}\n\nFix You can Apply: ${suggestion}`;
 
-        await shareMail(alertEmail, incidentContext);
+        try {
+          await shareMail(alertEmail, incidentContext);
+        } catch (mailErr) {
+          console.error(`[AUTOFIX] Failed to send incident email: ${mailErr.message}`);
+        }
 
         if (!agentReachable) {
           console.warn(`[AutoFix] Agent offline for instance ${instanceId}`);
