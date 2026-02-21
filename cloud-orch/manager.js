@@ -44,6 +44,7 @@ async function shareMail(email, content){
     const result = await geminiModel.generateContent(prompt);
     const summary = result.response.text();
     console.log(`[MAIL] Sending email to ${email}...`);
+    console.log(`MAIL CONTENT:- ${content}`)
     await sendReport(email, summary);
     console.log(`[MAIL] Email sent successfully to ${email}`);
   } catch (err) {
@@ -427,7 +428,6 @@ server.listen(PORT, () => {
   console.log(`✅ Server    → http://localhost:${PORT}`);
   console.log(`✅ WebSocket → ws://localhost:${PORT}`);
 });
-
 
 /*
 

@@ -24,12 +24,12 @@ const sendReport = async (email, reportData) => {
     console.log(`[EMAIL] Attempting connection to SMTP server...`);
     
     const mailOptions = {
-      from: `"LogPulse Agent" <${process.env.EMAIL_USER}>`,
+      from: `"Skyward Agent" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: '🚨 LogPulse: Incident Resolved & Analysis Report',
+      subject: '🚨 Skyward: Incident Resolved & Analysis Report',
       html: `
         <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0a1628; color: #d4dce8; padding: 24px; border-radius: 12px; border: 1px solid #1e2d3d;">
-          <h1 style="color: #00f5a0; margin-top: 0; font-family: 'Courier New', monospace;">LogPulse SRE 🤖</h1>
+          <h1 style="color: #00f5a0; margin-top: 0; font-family: 'Courier New', monospace;">Skyword SRE 🤖</h1>
           <p style="color: #ffb800; font-size: 14px;">An incident was detected and handled by your autonomous agent.</p>
           <div style="background: #030608; padding: 16px; border-radius: 8px; border-left: 4px solid #a78bfa; margin: 24px 0; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap;">${reportData}</div>
         </div>
