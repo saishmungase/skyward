@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { GLOBAL_STYLES, SERVER, WS_SERVER, LEVEL_STYLES } from "./theme.js";
 import { GridBackground, GlowButton, useToast, Toast, Badge, Spinner, AgentOrb } from "./Comp";
+import { MarkdownRenderer } from "./MarkdownRender.jsx";
 
 async function requestAIFix(instanceId, entryId) {
   const res = await fetch(`${SERVER}/ai/fix`, {
@@ -383,7 +384,9 @@ function FixModal({ alert, instanceId, onClose }) {
         {alert?.aiSuggestion && (
           <div style={{ padding: "16px 24px", borderBottom: "1px solid #1e2d3d", background: "rgba(167,139,250,0.04)", maxHeight: "25vh", overflowY: "auto" }}>
             <div style={{ fontSize: 10, color: "#a78bfa", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>🤖 AI FIX SUGGESTION</div>
-            <div style={{ fontSize: 12, color: "#c8b8f0", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{alert.aiSuggestion}</div>
+            <div style={{ fontSize: 12, color: "#c8b8f0", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+              <MarkdownRenderer text={alert.aiSuggestion} />
+            </div>
           </div>
         )}
 
@@ -403,22 +406,51 @@ function FixModal({ alert, instanceId, onClose }) {
             </div>
           )}
           {chatHistory.map((m, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", flexDirection: m.role === "user" ? "row-reverse" : "row" }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-                background: m.role === "user" ? "linear-gradient(135deg, #00c8ff, #0066ff)" : "radial-gradient(circle at 35% 35%, #00f5a0, #00c8d4 50%, #0066ff)",
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12,
-              }}>
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "flex-start",
+                flexDirection: m.role === "user" ? "row-reverse" : "row",
+              }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                  background:
+                    m.role === "user"
+                      ? "linear-gradient(135deg, #00c8ff, #0066ff)"
+                      : "radial-gradient(circle at 35% 35%, #00f5a0, #00c8d4 50%, #0066ff)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 12,
+                }}
+              >
                 {m.role === "user" ? "U" : "🤖"}
               </div>
-              <div style={{
-                maxWidth: "85%",
-                background: m.role === "user" ? "rgba(0,200,255,0.08)" : "rgba(167,139,250,0.08)",
-                border: `1px solid ${m.role === "user" ? "rgba(0,200,255,0.2)" : "rgba(167,139,250,0.2)"}`,
-                borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#d4dce8", lineHeight: 1.6,
-                whiteSpace: "pre-wrap",
-              }}>
-                {m.text}
+              
+              <div
+                style={{
+                  maxWidth: "85%",
+                  background:
+                    m.role === "user"
+                      ? "rgba(0,200,255,0.08)"
+                      : "rgba(167,139,250,0.08)",
+                  border: `1px solid ${
+                    m.role === "user"
+                      ? "rgba(0,200,255,0.2)"
+                      : "rgba(167,139,250,0.2)"
+                  }`,
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                }}
+              >
+                <MarkdownRenderer text={m.text} isUser={m.role === "user"} />
               </div>
             </div>
           ))}
