@@ -1,5 +1,7 @@
-export const SERVER = "https://testing-logs-o20x.onrender.com";
-export const WS_SERVER = "wss://testing-logs-o20x.onrender.com";
+// export const SERVER = "https://testing-logs-o20x.onrender.com";
+// export const WS_SERVER = "wss://testing-logs-o20x.onrender.com";
+export const SERVER = "https://api-skyward.saish.tech";
+export const WS_SERVER = "wss://api-skyward.saish.tech";
 export const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
 export const LEVEL_STYLES = {
