@@ -28,10 +28,30 @@ export default function App() {
     setPage("hook");
   };
 
-  if (page === "landing")   return <Landing onNavigate={setPage} />;
-  if (page === "auth")      return <Auth onNavigate={setPage} onAuth={handleAuth} />;
-  if (page === "dashboard") return <Dashboard user={user} onNavigate={setPage} onOpenHook={handleOpenHook} />;
-  if (page === "hook")      return <HookPage instance={activeInstance} onBack={() => setPage("dashboard")} />;
+  return (
+    <div style={{ width: "100vw", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {page === "landing" && (
+        <Landing onNavigate={setPage} />
+      )}
 
-  return null;
+      {page === "auth" && (
+        <Auth onNavigate={setPage} onAuth={handleAuth} />
+      )}
+
+      {page === "dashboard" && (
+        <Dashboard
+          user={user}
+          onNavigate={setPage}
+          onOpenHook={handleOpenHook}
+        />
+      )}
+
+      {page === "hook" && (
+        <HookPage
+          instance={activeInstance}
+          onBack={() => setPage("dashboard")}
+        />
+      )}
+    </div>
+  );
 }
